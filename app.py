@@ -24,9 +24,9 @@ app.layout = html.Div(children = [
                                 dcc.Upload(id='upload-file',
                                             children=[html.Button('Upload File')],multiple=False),
                                 html.Hr(),
-                                html.Div(id='el_list',style={'width':'50%','float':'left'}),
-                                html.Div(id='incr'),
-                                html.Div(id='incr-graph')
+                                html.Div(id='el_list',style={'width':'45%','float':'left'}),
+                                html.Div([html.Div(id='incr'),
+                                html.Div(id='incr-graph')],style={'width':'45%','float':'right'})
                                 ])
 
 
@@ -39,7 +39,14 @@ def update_output(list_of_contents):
         val = df.columns[2:df.shape[1]]
         children = [dcc.Checklist(id='symulator',options=[{'label':i, 'value':i} for i in val],values=val,style={'display':'block'}),
                     dcc.Graph(id='usage',figure={'data':[go.Bar(x=val,y=[100*calc_freq(df,i) for i in val])],
-                                                 'layout':go.Layout(title='Reach of single elements')}),
+                                                 'layout':go.Layout(title='Reach of single elements'
+                                                 ,yaxis=dict(nticks = 20,
+                                                             domain = [0, 100],
+                                                             showgrid=True,
+                                                             gridcolor='#bdbdbd',
+                                                             gridwidth=2,
+                                                             dtick=5,title='Reach'))}),
+
                     html.H2(id='total_reach',children=[calculate_reach(df,val)])]
         return children
 
@@ -70,8 +77,11 @@ def show_bt(list_of_contents):
 def gen_inc_graph(clicks,list_of_contents,val):
     if list_of_contents is not None:
         df = parse_contents(list_of_contents)
-        temp = calculate_incr(df[val])
-        children = [dcc.Graph(id='increm_graph',figure={'data':[go.Scatter(x=temp[0],y=temp[1],mode='line+markers')],
+        kolumny=[df.columns[0],df.columns[1]]
+        for x in val:
+            kolumny.append(x)
+        temp = calculate_incr(df[kolumny])
+        children = [dcc.Graph(id='increm_graph',figure={'data':[go.Scatter(x=temp[0],y=temp[1],mode='lines+markers')],
                                                         'layout':go.Layout(title='Incremental graph')})]
         return children
 
